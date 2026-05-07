@@ -117,6 +117,10 @@ git commit -m "feat: add parser utility for genre extraction"
     <option value="LM">Your Likes</option>
   </select>
   <button id="start-btn">Organize by Genre</button>
+  <div style="margin-top: 12px; display: flex; align-items: center;">
+    <input type="checkbox" id="auto-sync" style="margin-right: 8px;">
+    <label for="auto-sync" style="font-size: 14px;">Keep Organized (Auto-Sync)</label>
+  </div>
   <div id="status" style="margin-top: 12px; font-size: 12px; color: #aaa;"></div>
   <script src="popup.js"></script>
 </body>
@@ -127,8 +131,9 @@ git commit -m "feat: add parser utility for genre extraction"
 ```javascript
 document.getElementById('start-btn').addEventListener('click', () => {
   const playlistId = document.getElementById('playlist-select').value;
+  const autoSync = document.getElementById('auto-sync').checked;
   document.getElementById('status').innerText = 'Initializing...';
-  chrome.runtime.sendMessage({ action: "START_ORGANIZING", playlistId });
+  chrome.runtime.sendMessage({ action: "START_ORGANIZING", playlistId, autoSync });
 });
 ```
 
@@ -175,3 +180,86 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 git add src/background/background.js src/content/content.js
 git commit -m "feat: setup message bridge between popup, background, and content script"
 ```
+
+### Task 5: Duplicate Destroyer Logic (Unit Tested)
+**Files:**
+- Create: `src/utils/deduplicator.js`
+- Create: `tests/utils/deduplicator.test.js`
+
+**Step 1: Write failing test**
+```javascript
+const { findDuplicates } = require('../../src/utils/deduplicator');
+
+test('findDuplicates identifies tracks with same title and artist', () => {
+  const tracks = [
+    { id: '1', title: 'Song A', artist: 'Artist 1' },
+    { id: '2', title: 'Song B', artist: 'Artist 2' },
+    { id: '3', title: 'Song A', artist: 'Artist 1' }
+  ];
+  const duplicates = findDuplicates(tracks);
+  expect(duplicates.length).toBe(1);
+  expect(duplicates[0]).toEqual(expect.arrayContaining([tracks[0], tracks[2]]));
+});
+```
+
+**Step 2: Run test to verify it fails**
+Run: `npx jest tests/utils/deduplicator.test.js`
+Expected: FAIL
+
+**Step 3: Write minimal implementation**
+```javascript
+function findDuplicates(tracks) {
+  const groups = {};
+  tracks.forEach(track => {
+    const key = `${track.title.toLowerCase()}::${track.artist.toLowerCase()}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(track);
+  });
+  return Object.values(groups).filter(group => group.length > 1);
+}
+module.exports = { findDuplicates };
+```
+
+**Step 4: Run test to verify it passes**
+Run: `npx jest tests/utils/deduplicator.test.js`
+Expected: PASS
+
+**Step 5: Commit**
+```bash
+git add src/utils/deduplicator.js tests/utils/deduplicator.test.js
+git commit -m "feat: add duplicate destroyer core logic"
+```
+
+### Task 6: Background Auto-Sync Listener
+**Files:**
+- Modify: `src/background/background.js`
+
+**Step 1: Add Auto-Sync state and listener**
+```javascript
+let autoSyncEnabled = false;
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Existing logic...
+  if (request.action === "UPDATE_SYNC_SETTINGS") {
+    autoSyncEnabled = request.autoSync;
+    sendResponse({ success: true });
+  }
+});
+
+// Listener for tracking web requests to the YouTube Music "Like" endpoint
+chrome.webRequest.onCompleted.addListener((details) => {
+    if (autoSyncEnabled && details.url.includes('like/like')) {
+      console.log('New song liked! Auto-sync triggered.');
+      // Extract video ID from request body/url and queue for organization
+    }
+  },
+  { urls: ["*://music.youtube.com/youtubei/v1/like/like*"] }
+);
+```
+
+**Step 2: Commit**
+```bash
+git add src/background/background.js
+git commit -m "feat: add background auto-sync web request listener"
+```
+
