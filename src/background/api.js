@@ -12,17 +12,34 @@ class YTMClient {
     };
   }
 
+  async getSapisidHash() {
+    const cookie = await chrome.cookies.get({ url: 'https://music.youtube.com', name: 'SAPISID' });
+    if (!cookie) return null;
+    const sapisid = cookie.value;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const msg = `${timestamp} ${sapisid} https://music.youtube.com`;
+    const msgBuffer = new TextEncoder().encode(msg);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return `SAPISIDHASH ${timestamp}_${hashHex}`;
+  }
+
   async _post(endpoint, body = {}) {
     const url = `https://music.youtube.com/youtubei/v1/${endpoint}?key=${this.key}`;
     const payload = { context: this.context, ...body };
+    const authHeader = await this.getSapisidHash();
     
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Origin': 'https://music.youtube.com'
+    };
+    if (authHeader) headers['Authorization'] = authHeader;
+
     const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Origin': 'https://music.youtube.com'
-      },
+      headers: headers,
       body: JSON.stringify(payload)
     });
     
