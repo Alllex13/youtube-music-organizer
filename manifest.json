@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Music Auto Organizer",
+  "version": "1.0",
+  "description": "Automatically sort your YouTube Music playlists into genre-based folders.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["*://music.youtube.com/*"],
+  "action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://music.youtube.com/*"],
+      "js": ["src/content/content.js"]
+    }
+  ],
+  "icons": {
+    "128": "assets/icon128.png"
+  }
+}
