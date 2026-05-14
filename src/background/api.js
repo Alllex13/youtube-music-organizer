@@ -2,14 +2,8 @@ class YTMClient {
   constructor(config) {
     this.key = config.INNERTUBE_API_KEY;
     this.version = config.CLIENT_VERSION;
-    this.clientName = '69'; // WEB_REMIX (YouTube Music)
-    // We must pass the raw ytcfg object context in the body of requests
-    this.context = {
-      client: {
-        clientName: this.clientName,
-        clientVersion: this.version
-      }
-    };
+    this.clientName = 'WEB_REMIX'; 
+    this.context = config.INNERTUBE_CONTEXT;
   }
 
   async getCookie(url, name) {
