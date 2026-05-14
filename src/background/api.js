@@ -12,9 +12,18 @@ class YTMClient {
     };
   }
 
+  async getCookie(url, name) {
+    try {
+      return await chrome.cookies.get({ url, name });
+    } catch (e) {
+      console.warn(`Cookie access blocked for ${url}`, e);
+      return null;
+    }
+  }
+
   async getSapisidHash() {
-    const cookie = await chrome.cookies.get({ url: 'https://youtube.com', name: 'SAPISID' }) || 
-                   await chrome.cookies.get({ url: 'https://music.youtube.com', name: 'SAPISID' });
+    const cookie = await this.getCookie('https://youtube.com', 'SAPISID') || 
+                   await this.getCookie('https://music.youtube.com', 'SAPISID');
     console.log("SAPISID Cookie found:", !!cookie);
     if (!cookie) return null;
     const sapisid = cookie.value;
