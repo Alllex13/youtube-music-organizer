@@ -13,7 +13,9 @@ class YTMClient {
   }
 
   async getSapisidHash() {
-    const cookie = await chrome.cookies.get({ url: 'https://music.youtube.com', name: 'SAPISID' });
+    const cookie = await chrome.cookies.get({ url: 'https://youtube.com', name: 'SAPISID' }) || 
+                   await chrome.cookies.get({ url: 'https://music.youtube.com', name: 'SAPISID' });
+    console.log("SAPISID Cookie found:", !!cookie);
     if (!cookie) return null;
     const sapisid = cookie.value;
     const timestamp = Math.floor(Date.now() / 1000);
@@ -22,7 +24,9 @@ class YTMClient {
     const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return `SAPISIDHASH ${timestamp}_${hashHex}`;
+    const finalHash = `SAPISIDHASH ${timestamp}_${hashHex}`;
+    console.log("Generated Hash:", finalHash);
+    return finalHash;
   }
 
   async _post(endpoint, body = {}) {
@@ -32,7 +36,8 @@ class YTMClient {
     
     const headers = {
       'Content-Type': 'application/json',
-      'X-Origin': 'https://music.youtube.com'
+      'X-Origin': 'https://music.youtube.com',
+      'Origin': 'https://music.youtube.com'
     };
     if (authHeader) headers['Authorization'] = authHeader;
 
@@ -43,7 +48,11 @@ class YTMClient {
       body: JSON.stringify(payload)
     });
     
-    if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`403 Error Details for ${endpoint}:`, errorText);
+      throw new Error(`API HTTP Error: ${response.status}`);
+    }
     return await response.json();
   }
 
