@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 320px; padding: 16px; margin: 0; background: #0f0f0f; color: white;}
+    button { background: #ff0000; color: white; border: none; padding: 10px 16px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold;}
+    select { width: 100%; padding: 8px; margin-bottom: 16px; background: #212121; color: white; border: 1px solid #3d3d3d; border-radius: 4px;}
+  </style>
+</head>
+<body>
+  <h2>YTM Organizer</h2>
+  <label for="playlist-select">Source Playlist:</label>
+  <select id="playlist-select">
+    <option value="LM">Your Likes</option>
+  </select>
+  <button id="start-btn">Organize by Genre</button>
+  <div style="margin-top: 12px; display: flex; align-items: center;">
+    <input type="checkbox" id="auto-sync" style="margin-right: 8px;">
+    <label for="auto-sync" style="font-size: 14px;">Keep Organized (Auto-Sync)</label>
+  </div>
+  <div id="status" style="margin-top: 12px; font-size: 12px; color: #aaa;"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
