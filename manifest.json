@@ -3,8 +3,8 @@
   "name": "YouTube Music Auto Organizer",
   "version": "1.0",
   "description": "Automatically sort your YouTube Music playlists into genre-based folders.",
-  "permissions": ["storage", "activeTab", "scripting", "webRequest"],
-  "host_permissions": ["*://music.youtube.com/*"],
+  "permissions": ["storage", "activeTab", "scripting", "webRequest", "cookies"],
+  "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_popup": "src/popup/popup.html"
   },
