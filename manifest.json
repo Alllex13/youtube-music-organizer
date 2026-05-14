@@ -16,8 +16,5 @@
       "matches": ["*://music.youtube.com/*"],
       "js": ["src/content/content.js"]
     }
-  ],
-  "icons": {
-    "128": "assets/icon128.png"
-  }
+  ]
 }
