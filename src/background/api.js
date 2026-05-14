@@ -18,8 +18,10 @@ class YTMClient {
     
     const response = await fetch(url, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-Origin': 'https://music.youtube.com'
       },
       body: JSON.stringify(payload)
     });
