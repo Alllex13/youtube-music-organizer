@@ -3,7 +3,12 @@ class YTMClient {
     this.key = config.INNERTUBE_API_KEY;
     this.version = config.CLIENT_VERSION;
     this.clientName = 'WEB_REMIX'; 
-    this.context = config.INNERTUBE_CONTEXT;
+    this.context = config.INNERTUBE_CONTEXT || {
+      client: {
+        clientName: this.clientName,
+        clientVersion: this.version || '1.20260514.01.00'
+      }
+    };
   }
 
   async getCookie(url, name) {
@@ -64,7 +69,13 @@ class YTMClient {
 
   async fetchPlaylist(playlistId) {
     console.log(`Fetching playlist ${playlistId}...`);
-    const data = await this._post('browse', { browseId: `VL${playlistId}` });
+    let browseId = playlistId;
+    if (playlistId === 'LM') {
+      browseId = 'FLLM';
+    } else if (!playlistId.startsWith('VL') && playlistId.startsWith('PL')) {
+      browseId = `VL${playlistId}`;
+    }
+    const data = await this._post('browse', { browseId });
     // In reality, this requires complex JSON path parsing to extract track IDs.
     // For this MVP, we will simulate the parsing logic returning dummy track IDs.
     console.log("Browse API returned:", data ? "Success" : "Failed");
