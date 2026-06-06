@@ -2,9 +2,8 @@
 
 | Task | Status | Description |
 |---|---|---|
-| Explore project context | [x] | Review existing popup structure, styling, and JS logic |
-| Ask clarifying questions | [x] | Get user preferences on UI layout, features, and styling details |
-| Propose 2-3 approaches | [x] | Present UI design themes and layouts |
-| Present design | [x] | Design details of the popup screens |
-| Write design doc | [x] | Create and commit the design markdown document |
-| Transition to implementation | [x] | Invoke writing-plans skill |
+| Task 1: Glassmorphic Styling Foundation | [ ] | Implement styling framework in popup.css |
+| Task 2: Multi-Card HTML Layout | [ ] | Define 5-card container markup in popup.html |
+| Task 3: State Navigation Controller | [ ] | Write card switching state logic in popup.js |
+| Task 4: Dynamic List Rendering | [ ] | Write dynamic HTML generators for duplicates and uncategorized tracks in popup.js |
+| Task 5: Handle Message Streams | [ ] | Connect runtime communication hooks between popup and service worker |
