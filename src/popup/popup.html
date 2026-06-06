@@ -1,25 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <title>YTM Organizer</title>
   <link rel="stylesheet" href="popup.css">
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 320px; padding: 16px; margin: 0; background: #0f0f0f; color: white;}
-    button { background: #ff0000; color: white; border: none; padding: 10px 16px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold;}
-    select { width: 100%; padding: 8px; margin-bottom: 16px; background: #212121; color: white; border: 1px solid #3d3d3d; border-radius: 4px;}
-  </style>
 </head>
 <body>
-  <h2>YTM Organizer</h2>
-  <label for="playlist-select">Source Playlist:</label>
-  <select id="playlist-select">
-    <option value="LM">Your Likes</option>
-  </select>
-  <button id="start-btn">Organize by Genre</button>
-  <div style="margin-top: 12px; display: flex; align-items: center;">
-    <input type="checkbox" id="auto-sync" style="margin-right: 8px;">
-    <label for="auto-sync" style="font-size: 14px;">Keep Organized (Auto-Sync)</label>
+  <div class="popup-viewport">
+    
+    <!-- CARD 1: SETUP -->
+    <section id="card-setup" class="card active">
+      <h2 style="margin-top: 0; font-weight: 700; background: linear-gradient(90deg, #FFF, #FF4D4D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif;">YTM Organizer</h2>
+      
+      <label for="playlist-select" style="font-size: 14px; color: #A0A0A0; display: block; margin-bottom: 6px;">Source Playlist:</label>
+      <select id="playlist-select">
+        <option value="LM">Your Likes</option>
+      </select>
+      
+      <div style="margin-bottom: 20px; display: flex; align-items: center;">
+        <input type="checkbox" id="auto-sync" style="margin-right: 8px; accent-color: #FF0000;">
+        <label for="auto-sync" style="font-size: 14px; color: #E0E0E0; cursor: pointer;">Keep Organized (Auto-Sync)</label>
+      </div>
+      
+      <button id="start-btn">Organize by Genre</button>
+    </section>
+
+    <!-- CARD 2: DUPLICATES -->
+    <section id="card-duplicates" class="card">
+      <h3 style="margin-top: 0; font-weight: 600; color: #FF4D4D; font-family: 'Outfit', sans-serif;">Duplicates Detected</h3>
+      <p style="font-size: 12px; color: #A0A0A0; margin-bottom: 10px;">Select versions of duplicates to remove:</p>
+      
+      <div id="duplicates-list" class="scroll-container">
+        <!-- Rendered dynamically -->
+      </div>
+      
+      <button id="delete-dup-btn">Delete & Continue</button>
+    </section>
+
+    <!-- CARD 3: SYNCING -->
+    <section id="card-syncing" class="card">
+      <div style="text-align: center; padding: 20px 0;">
+        <div class="pulse-ring" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #FF0000; display: inline-block; animation: pulse 1.5s infinite ease-in-out;"></div>
+        <h3 id="sync-status" style="margin-top: 16px; font-weight: 500; font-family: 'Outfit', sans-serif;">Initializing...</h3>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden;">
+        <div id="progress-bar" style="background: linear-gradient(90deg, #FF0000, #FF4D4D); width: 0%; height: 100%; transition: width 0.3s ease;"></div>
+      </div>
+    </section>
+
+    <!-- CARD 4: UNCATEGORIZED -->
+    <section id="card-uncategorized" class="card">
+      <h3 style="margin-top: 0; font-weight: 600; color: #FF4D4D; font-family: 'Outfit', sans-serif;">Uncategorized Tracks</h3>
+      <p style="font-size: 12px; color: #A0A0A0; margin-bottom: 10px;">Assign genres manually:</p>
+      
+      <div id="uncategorized-list" class="scroll-container">
+        <!-- Rendered dynamically -->
+      </div>
+      
+      <button id="finish-btn">Finish Organization</button>
+    </section>
+
+    <!-- CARD 5: REPORT -->
+    <section id="card-report" class="card">
+      <h2 style="margin-top: 0; font-weight: 700; color: #00FF66; font-family: 'Outfit', sans-serif;">Success!</h2>
+      <p style="font-size: 14px; color: #E0E0E0; margin-bottom: 20px;" id="report-summary">Organization complete.</p>
+      
+      <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #A0A0A0;">
+        <div>Tracks Organized: <span id="stat-organized" style="color: white; font-weight: 600;">0</span></div>
+        <div>Playlists Created: <span id="stat-playlists" style="color: white; font-weight: 600;">0</span></div>
+        <div>Duplicates Removed: <span id="stat-duplicates" style="color: white; font-weight: 600;">0</span></div>
+      </div>
+      
+      <button id="home-btn">Done</button>
+    </section>
+
   </div>
-  <div id="status" style="margin-top: 12px; font-size: 12px; color: #aaa;"></div>
+  
+  <style>
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+      70% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+      100% { transform: scale(0.9); opacity: 0.5; box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+    }
+  </style>
   <script src="popup.js"></script>
 </body>
 </html>
