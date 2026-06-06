@@ -11,7 +11,21 @@ function safeSendMessage(message) {
 
 function safeSendTabMessage(tabId, message) {
   chrome.tabs.sendMessage(tabId, message).catch(err => {
-    console.warn("Content script is not active on tab:", tabId, err.message);
+    console.warn("Content script is not active on tab, attempting dynamic injection:", tabId, err.message);
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ['src/content/content.js']
+    }).then(() => {
+      console.log("Successfully injected content script dynamically into tab:", tabId);
+      // Wait 100ms for script registration and retry sending message
+      setTimeout(() => {
+        chrome.tabs.sendMessage(tabId, message).catch(retryErr => {
+          console.error("Retry sending message failed:", retryErr.message);
+        });
+      }, 100);
+    }).catch(injectErr => {
+      console.error("Failed to inject content script dynamically:", injectErr.message);
+    });
   });
 }
 
