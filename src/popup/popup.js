@@ -109,3 +109,41 @@ function renderUncategorized(tracks) {
   
   showCard('uncategorized');
 }
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "UPDATE_PROGRESS") {
+    showCard('syncing');
+    document.getElementById('sync-status').innerText = message.status;
+    document.getElementById('progress-bar').style.width = `${message.percent || 10}%`;
+  } else if (message.action === "SHOW_DUPLICATES") {
+    renderDuplicates(message.duplicates);
+  } else if (message.action === "SHOW_UNCATEGORIZED") {
+    renderUncategorized(message.tracks);
+  } else if (message.action === "ORGANIZATION_COMPLETE") {
+    showCard('report');
+    document.getElementById('stat-organized').innerText = message.stats.organized;
+    document.getElementById('stat-playlists').innerText = message.stats.playlists;
+    document.getElementById('stat-duplicates').innerText = message.stats.duplicates;
+  }
+});
+
+// Event listener for Duplicate Delete button
+document.getElementById('delete-dup-btn').addEventListener('click', () => {
+  const checkedCheckboxes = document.querySelectorAll('[name^="dup-group-"]:checked');
+  const idsToDelete = Array.from(checkedCheckboxes).map(cb => cb.value);
+  showCard('syncing');
+  document.getElementById('sync-status').innerText = 'Removing duplicates...';
+  chrome.runtime.sendMessage({ action: "DUPLICATES_RESOLVED", idsToDelete });
+});
+
+// Event listener for Finish Uncategorized button
+document.getElementById('finish-btn').addEventListener('click', () => {
+  const inputs = document.querySelectorAll('.uncat-input');
+  const resolutions = Array.from(inputs).map(inp => ({
+    videoId: inp.dataset.trackId,
+    genre: inp.value.trim() || "Uncategorized"
+  }));
+  showCard('syncing');
+  document.getElementById('sync-status').innerText = 'Completing organization...';
+  chrome.runtime.sendMessage({ action: "UNCATEGORIZED_RESOLVED", resolutions });
+});

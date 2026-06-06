@@ -15,27 +15,50 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // The Full Orchestration Flow
     (async () => {
       try {
-        console.log("1. Fetching source playlist...");
+        chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: "Fetching source playlist...", percent: 25 });
         const playlist = await ytmClient.fetchPlaylist(request.playlistId);
         
-        console.log(`2. Fetching genres for ${playlist.tracks.length} tracks...`);
+        chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: `Fetching genres for ${playlist.tracks.length} tracks...`, percent: 50 });
         const genres = await Promise.all(playlist.tracks.map(t => ytmClient.fetchTrackGenre(t.videoId)));
         
-        console.log("3. Creating destination playlist for Rock...");
+        chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: "Creating destination playlist for Rock...", percent: 75 });
         const newPlaylistId = await ytmClient.createPlaylist("Genre: Rock");
         
-        console.log("4. Moving tracks to new playlist...");
+        chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: "Moving tracks to new playlist...", percent: 90 });
         await ytmClient.addTracksToPlaylist(newPlaylistId, playlist.tracks.map(t => t.videoId));
         
         console.log("✅ Organization Complete!");
-        // Future step: send ORGANIZATION_COMPLETE message to popup UI
+        chrome.runtime.sendMessage({ 
+          action: "ORGANIZATION_COMPLETE", 
+          stats: { organized: playlist.tracks.length, playlists: 1, duplicates: 0 } 
+        });
       } catch (err) {
         console.error("Orchestration Failed:", err);
+        chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: `Error: ${err.message}`, percent: 0 });
       }
     })();
   } else if (request.action === "UPDATE_SYNC_SETTINGS") {
     autoSyncEnabled = request.autoSync;
     sendResponse({ success: true });
+  } else if (request.action === "DUPLICATES_RESOLVED") {
+    console.log("Duplicates selected for removal:", request.idsToDelete);
+    // Resume flow after mock deletion
+    chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: "Finishing sorting...", percent: 80 });
+    setTimeout(() => {
+      chrome.runtime.sendMessage({ 
+        action: "ORGANIZATION_COMPLETE", 
+        stats: { organized: 2, playlists: 1, duplicates: request.idsToDelete.length } 
+      });
+    }, 1000);
+  } else if (request.action === "UNCATEGORIZED_RESOLVED") {
+    console.log("Uncategorized tracks resolved:", request.resolutions);
+    chrome.runtime.sendMessage({ action: "UPDATE_PROGRESS", status: "Creating playlists...", percent: 90 });
+    setTimeout(() => {
+      chrome.runtime.sendMessage({ 
+        action: "ORGANIZATION_COMPLETE", 
+        stats: { organized: request.resolutions.length, playlists: 2, duplicates: 0 } 
+      });
+    }, 1000);
   }
 });
 
