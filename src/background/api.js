@@ -35,28 +35,31 @@ class YTMClient {
   async _post(endpoint, body = {}) {
     const url = `https://music.youtube.com/youtubei/v1/${endpoint}?key=${this.key}`;
     const payload = { context: this.context, ...body };
-    const authHeader = await this.getSapisidHash();
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Origin': 'https://music.youtube.com',
-      'Origin': 'https://music.youtube.com'
-    };
-    if (authHeader) headers['Authorization'] = authHeader;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      credentials: 'include',
-      headers: headers,
-      body: JSON.stringify(payload)
+    return new Promise((resolve, reject) => {
+      chrome.tabs.query({url: "*://music.youtube.com/*"}, (tabs) => {
+        if (tabs.length === 0) {
+          return reject(new Error("No YouTube Music tab found."));
+        }
+        chrome.tabs.sendMessage(tabs[0].id, {
+          action: "PROXY_POST",
+          url,
+          payload
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            return reject(new Error(chrome.runtime.lastError.message));
+          }
+          if (!response) {
+            return reject(new Error("No response from content script proxy."));
+          }
+          if (response.error) {
+            console.error("Proxy POST failed:", response.error, response.details);
+            return reject(new Error(response.error));
+          }
+          resolve(response.data);
+        });
+      });
     });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`403 Error Details for ${endpoint}:`, errorText);
-      throw new Error(`API HTTP Error: ${response.status}`);
-    }
-    return await response.json();
   }
 
   async fetchPlaylist(playlistId) {
