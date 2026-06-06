@@ -71,7 +71,7 @@ class YTMClient {
     console.log(`Fetching playlist ${playlistId}...`);
     let browseId = playlistId;
     if (playlistId === 'LM') {
-      browseId = 'FLLM';
+      browseId = 'VLLM';
     } else if (!playlistId.startsWith('VL') && playlistId.startsWith('PL')) {
       browseId = `VL${playlistId}`;
     }
