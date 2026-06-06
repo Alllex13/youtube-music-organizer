@@ -80,10 +80,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           func: () => {
             if (typeof window.ytcfg === 'undefined') return null;
             try {
+              const getVal = (key) => {
+                if (typeof window.ytcfg.get === 'function') {
+                  return window.ytcfg.get(key);
+                }
+                if (window.ytcfg.data_ && key in window.ytcfg.data_) {
+                  return window.ytcfg.data_[key];
+                }
+                return undefined;
+              };
+
+              const apiKey = getVal('INNERTUBE_API_KEY');
+              const clientVersion = getVal('INNERTUBE_CLIENT_VERSION') || getVal('CLIENT_VERSION') || '1.20260603.01.00';
+              const clientName = getVal('INNERTUBE_CLIENT_NAME') || 'WEB_REMIX';
+              
+              let context = getVal('INNERTUBE_CONTEXT');
+              if (!context) {
+                const gl = getVal('GL') || getVal('INNERTUBE_CONTEXT_GL') || 'US';
+                const hl = getVal('HL') || getVal('INNERTUBE_CONTEXT_HL') || 'en';
+                context = {
+                  client: {
+                    clientName: clientName,
+                    clientVersion: clientVersion,
+                    gl: gl,
+                    hl: hl
+                  }
+                };
+              }
+              
               return {
-                INNERTUBE_API_KEY: window.ytcfg.get('INNERTUBE_API_KEY'),
-                CLIENT_VERSION: window.ytcfg.get('CLIENT_VERSION'),
-                INNERTUBE_CONTEXT: window.ytcfg.get('INNERTUBE_CONTEXT')
+                INNERTUBE_API_KEY: apiKey,
+                CLIENT_VERSION: clientVersion,
+                INNERTUBE_CONTEXT: context
               };
             } catch (e) {
               return null;
